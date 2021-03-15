@@ -7,8 +7,8 @@ import yahoofinance as yf
 import nltk
 
 
-url = "/content/drive/MyDrive/ColabNotebooks/trump-twitter.csv"
-df = pd.read_csv(url)
+fileName = "./trump-twitter.csv"
+df = pd.read_csv(file)
 df.date = pd.to_datetime(df.date)
 df = df[df.date >= np.datetime64('2016-08-01')]
 df = df.sort_values(by=["date"], ascending=True)
@@ -37,4 +37,5 @@ dfs = historical.to_dfs()
 df_stocks = dfs['Historical Prices']
 df_stocks
 daily_return = df_stocks["Open"].pct_change(1)
-daily_return.shape
+df_stocks["daily_return"] = daily_return
+df_stocks["daily_gain"] = df_stocks["daily_return"] > 0
