@@ -4,15 +4,19 @@ import matplotlib.pylab as plt # for plotting
 import pandas as pd
 import sklearn
 import yahoofinance as yf
-import nltk
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
+# LOAD TWEETS
 
-url = "/content/drive/MyDrive/ColabNotebooks/trump-twitter.csv"
+url = "trump-twitter.csv"
 df = pd.read_csv(url)
 df.date = pd.to_datetime(df.date)
 df = df[df.date >= np.datetime64('2016-08-01')]
 df = df.sort_values(by=["date"], ascending=True)
 df.shape
+
+
+# GET SENTIMENTS
 
 neg_sent = []
 neu_sent = []
@@ -31,6 +35,8 @@ df['Neg_Sent'] = neg_sent
 df['Neu_Sent'] = neu_sent
 df['Pos_Sent'] = pos_sent
 df['Comp_Sent'] = comp_sent
+
+# GET PRICES
 
 historical = yf.HistoricalPrices('SPY', '2016-08-01', '2021-01-20')
 dfs = historical.to_dfs()
