@@ -5,13 +5,14 @@ import pandas as pd
 import sklearn
 import yahoofinance as yf
 import nltk
+import sys
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 nltk.download('vader_lexicon')
 
 # LOAD TWEETS
 
-fileName = "./trump-twitter.csv"
-df = pd.read_csv(file)
+fileName = "data/trump-twitter.csv"
+df = pd.read_csv(fileName)
 df.date = pd.to_datetime(df.date)
 df = df[df.date >= np.datetime64('2016-08-01')]
 df = df.sort_values(by=["date"], ascending=True)
@@ -25,6 +26,7 @@ neu_sent = []
 pos_sent = []
 comp_sent = []
 
+print("starting sentiment analysis")
 for tweet in df['text']:
     # pull out and score contents
     score = SentimentIntensityAnalyzer().polarity_scores(tweet)
@@ -37,6 +39,9 @@ df['Neg_Sent'] = neg_sent
 df['Neu_Sent'] = neu_sent
 df['Pos_Sent'] = pos_sent
 df['Comp_Sent'] = comp_sent
+
+df.to_pickle("data/sentiment_labelled.pkl")
+sys.exit()
 
 # GET PRICES
 
