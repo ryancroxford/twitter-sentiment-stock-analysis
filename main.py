@@ -4,7 +4,9 @@ import matplotlib.pylab as plt # for plotting
 import pandas as pd
 import sklearn
 import yahoofinance as yf
+import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
+nltk.download('vader_lexicon')
 
 # LOAD TWEETS
 
