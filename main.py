@@ -41,7 +41,6 @@ df['Pos_Sent'] = pos_sent
 df['Comp_Sent'] = comp_sent
 
 df.to_pickle("data/sentiment_labelled.pkl")
-sys.exit()
 
 # GET PRICES
 
@@ -52,3 +51,8 @@ df_stocks
 daily_return = df_stocks["Open"].pct_change(1)
 df_stocks["daily_return"] = daily_return
 df_stocks["daily_gain"] = df_stocks["daily_return"] > 0
+
+
+## all the above does sets up this:
+df = pd.read_pickle("data/sentiment_labelled.pkl")
+df_stocks = pd.read_pickle("data/df_stocks.pkl")
