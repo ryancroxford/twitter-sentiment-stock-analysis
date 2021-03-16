@@ -124,7 +124,6 @@ def main():
         avg_tweet_array = np.insert(avg_tweet_array, 1, sma, axis=1)
 
     # print
-    print(avg_tweet_array)
 
 if __name__ == '__main__':
     main()
