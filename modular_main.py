@@ -2,10 +2,15 @@
 import numpy as np
 import matplotlib.pylab as plt # for plotting
 import pandas as pd
-import sklearn
 import yahoofinance as yf
 import nltk
 import sys
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
+from sklearn import datasets, preprocessing, metrics
+from sklearn.model_selection import train_test_split
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 nltk.download('vader_lexicon')
 
@@ -100,6 +105,12 @@ def get_avgd_array(df):
 # w is number of indicies to average i.e. w = 3 is a 3 day rolling average
 def moving_average(x, w):
     return np.convolve(x, np.ones(w), 'valid') / w
+
+
+def get_test_train_split(df):
+    x_train, x_test, y_train, y_test = train_test_split(df[""], df["daily_gain"],
+                                                        test_size=0.25, shuffle=False,
+                                                        random_state=0)
 
 
 def main():
