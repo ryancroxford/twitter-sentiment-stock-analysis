@@ -124,9 +124,9 @@ def main():
         print(sma.shape)
         print(avg_tweet_array.shape)
 
-        np.insert(avg_tweet_array, 1, sma)
+        avg_tweet_array = np.insert(avg_tweet_array, 1, sma, axis=1)
 
-    print(avg_tweet_array.shape)
+        print(avg_tweet_array.shape)
     # print
 
 if __name__ == '__main__':
