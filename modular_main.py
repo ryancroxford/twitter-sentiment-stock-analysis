@@ -95,6 +95,13 @@ def get_avgd_array(df):
     return np.array(avg_tweet_array)
 
 
+# https://stackoverflow.com/questions/14313510/how-to-calculate-rolling-moving-average-using-numpy-scipy
+# x is target sequence to average
+# w is number of indicies to average i.e. w = 3 is a 3 day rolling average
+def moving_average(x, w):
+    return np.convolve(x, np.ones(w), 'valid') / w
+
+
 def main():
     reprocess_data = False
 
