@@ -2,15 +2,10 @@
 import numpy as np
 import matplotlib.pylab as plt # for plotting
 import pandas as pd
+import sklearn
 import yahoofinance as yf
 import nltk
 import sys
-from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.svm import SVC
-from sklearn.ensemble import RandomForestClassifier
-from sklearn import datasets, preprocessing, metrics
-from sklearn.model_selection import train_test_split
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 nltk.download('vader_lexicon')
 
@@ -94,7 +89,7 @@ def get_avgd_array(df):
         avg_retweets /= tweets_per_day
         avg_favorites /= tweets_per_day
 
-        elem = [avg_neg, avg_pos, avg_neu, avg_comp, avg_retweets, avg_favorites]
+        elem = [day, avg_neg, avg_pos, avg_neu, avg_comp, avg_retweets, avg_favorites]
         avg_tweet_array.append(elem)
 
     return np.array(avg_tweet_array)
@@ -106,14 +101,6 @@ def get_avgd_array(df):
 def moving_average(x, w):
     return np.convolve(x, np.ones(w), 'valid') / w
 
-
-def get_test_train_split(df):
-    x_train, x_test, y_train, y_test = train_test_split(df.data, df.features,
-                                                        test_size=0.25, shuffle=False,
-                                                        random_state=0)
-# def build_df(df, df_stocks):
-#
-#
 
 def main():
     reprocess_data = False
@@ -129,9 +116,18 @@ def main():
         df_stocks = pd.read_pickle("data/df_stocks.pkl")
 
     avg_tweet_array = get_avgd_array(df)
+    print(avg_tweet_array.shape[1])
+
+    for i in range(1, avg_tweet_array.shape[1]):
+        sma = moving_average(avg_tweet_array[:,i], 3)
+        sma.reshape(len(sma), 1)
+        print(sma.shape)
+        print(avg_tweet_array.shape)
+
+        np.insert(avg_tweet_array, 1, sma)
+
     print(avg_tweet_array.shape)
-
-
+    # print
 
 if __name__ == '__main__':
     main()
