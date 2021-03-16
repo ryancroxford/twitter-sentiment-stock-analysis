@@ -116,17 +116,13 @@ def main():
         df_stocks = pd.read_pickle("data/df_stocks.pkl")
 
     avg_tweet_array = get_avgd_array(df)
-    print(avg_tweet_array.shape[1])
 
     for i in range(1, avg_tweet_array.shape[1]):
         sma = moving_average(avg_tweet_array[:,i], 3)
         sma.reshape(len(sma), 1)
-        print(sma.shape)
-        print(avg_tweet_array.shape)
-
+        sma = np.insert(sma, [0,0], values=0)
         avg_tweet_array = np.insert(avg_tweet_array, 1, sma, axis=1)
 
-        print(avg_tweet_array.shape)
     # print
 
 if __name__ == '__main__':
