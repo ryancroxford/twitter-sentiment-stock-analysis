@@ -117,11 +117,12 @@ def main():
 
     avg_tweet_array = get_avgd_array(df)
 
-    for i in range(1, avg_tweet_array.shape[1]):
+    init_cols = avg_tweet_array.shape[1]
+    for i in range(1, init_cols):
         sma = moving_average(avg_tweet_array[:,i], 3)
         sma.reshape(len(sma), 1)
         sma = np.insert(sma, [0,0], values=0)
-        avg_tweet_array = np.insert(avg_tweet_array, 1, sma, axis=1)
+        avg_tweet_array = np.insert(avg_tweet_array, avg_tweet_array.shape[1], sma, axis=1)
 
     # print
 
