@@ -94,7 +94,7 @@ def get_avgd_array(df):
         avg_retweets /= tweets_per_day
         avg_favorites /= tweets_per_day
 
-        elem = [avg_neg, avg_pos, avg_neu, avg_comp, avg_retweets, avg_favorites]
+        elem = [day, avg_neg, avg_pos, avg_neu, avg_comp, avg_retweets, avg_favorites]
         avg_tweet_array.append(elem)
 
     return np.array(avg_tweet_array)
@@ -127,9 +127,18 @@ def main():
         df_stocks = pd.read_pickle("data/df_stocks.pkl")
 
     avg_tweet_array = get_avgd_array(df)
+    print(avg_tweet_array.shape[1])
+
+    for i in range(1, avg_tweet_array.shape[1]):
+        sma = moving_average(avg_tweet_array[:,i], 3)
+        sma.reshape(len(sma), 1)
+        print(sma.shape)
+        print(avg_tweet_array.shape)
+
+        np.insert(avg_tweet_array, 1, sma)
+
     print(avg_tweet_array.shape)
-
-
+    # print
 
 if __name__ == '__main__':
     main()
