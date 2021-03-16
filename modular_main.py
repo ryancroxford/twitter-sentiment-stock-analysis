@@ -52,6 +52,48 @@ def load_stocks():
 
     return df_stocks
 
+def get_avgd_array(df):
+    # convert to an np array and then organize tweets by day
+    tweet_array = np.array(df)
+    tweet_dict = {}
+    avg_tweet_array = []
+
+    for row in tweet_array:
+        curr_date = row[7].date()
+        if curr_date in tweet_dict:
+            tweet_dict[curr_date].append(row)
+        else:
+            tweet_dict[curr_date] = [row]
+
+    for day in tweet_dict.keys():
+
+        avg_neg = 0
+        avg_pos = 0
+        avg_neu = 0
+        avg_comp = 0
+        avg_retweets = 0
+        avg_favorites = 0
+        for tweet in tweet_dict[day]:
+            avg_neg += tweet[-4]
+            avg_pos += tweet[-3]
+            avg_neu += tweet[-2]
+            avg_comp += tweet[-1]
+            avg_favorites += tweet[5]
+            avg_retweets += tweet[6]
+
+        tweets_per_day = len(tweet_dict[day])
+        avg_neg /= tweets_per_day
+        avg_pos /= tweets_per_day
+        avg_neu /= tweets_per_day
+        avg_comp /= tweets_per_day
+        avg_retweets /= tweets_per_day
+        avg_favorites /= tweets_per_day
+
+        elem = [avg_neg, avg_pos, avg_neu, avg_comp, avg_retweets, avg_favorites]
+        avg_tweet_array.append(elem)
+
+    return np.array(avg_tweet_array)
+
 
 def main():
     reprocess_data = False
@@ -65,6 +107,11 @@ def main():
     else:
         df = pd.read_pickle("data/sentiment_labelled.pkl")
         df_stocks = pd.read_pickle("data/df_stocks.pkl")
+
+    avg_tweet_array = get_avgd_array(df)
+    print(avg_tweet_array.shape)
+
+
 
 if __name__ == '__main__':
     main()
