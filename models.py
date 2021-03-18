@@ -1,6 +1,6 @@
 from sklearn import datasets, preprocessing, metrics
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import confusion_matrix, plot_confusion_matrix
 import matplotlib.pyplot as plt
@@ -17,18 +17,18 @@ def split_data(df, target_label):
                             random_state=0)
 
 
-def run_random_forest(x_train, x_test, y_train, y_test, estimators):
+def run_random_forest_classifer(x_train, x_test, y_train, y_test, estimators):
     clf = RandomForestClassifier(random_state=0, n_estimators=estimators)
     clf.fit(x_train, y_train)
     calc_score_on_high_prob(clf, x_test, y_test)
-    return clf.score(x_test, y_test)
+    print(f"Random Forest Classifer score: {clf.score(x_test, y_test)}")
 
 
 def run_decision_tree(x_train, x_test, y_train, y_test, num_max_features):
     clf = DecisionTreeClassifier(random_state=0, max_features=16)
     clf.fit(x_train, y_train)
     calc_score_on_high_prob(clf, x_test, y_test)
-    return clf.score(x_test, y_test)
+    print(f"decision tree Classifer score: {clf.score(x_test, y_test)}")
 
 
 def calc_score_on_high_prob(clf, x_test, y_test):
@@ -43,6 +43,7 @@ def calc_score_on_high_prob(clf, x_test, y_test):
     plt.show()
 
 
+# TODO: Create methods for outputting stats about each model run
 
 def main():
     merge = pd.read_pickle("data/merged.pkl")
@@ -54,9 +55,9 @@ def main():
     merge[label] = merge[label].astype("bool")
     x_train, x_test, y_train, y_test = split_data(merge.dropna(), label)
     estimators = 100
-    print(run_random_forest(x_train, x_test, y_train, y_test, estimators))
+    run_random_forest_classifer(x_train, x_test, y_train, y_test, estimators)
     num_max_features = x_train.shape[1]
-    print(run_decision_tree(x_train, x_test, y_train, y_test, num_max_features))
+    run_decision_tree(x_train, x_test, y_train, y_test, num_max_features)
 
     # messing around with various things below
 
@@ -78,9 +79,9 @@ def main():
 
     calc_score_on_high_prob(clf, x_test, y_test)
 
-
-
-
+    # For the regressor, split the data with daily_return as the target
+    x_train, x_test, y_train, y_test = train_test_split(merge[column_names], merge["daily_return"], test_size=0.2, shuffle=False,
+                                                        random_state=0)
 
 
 
