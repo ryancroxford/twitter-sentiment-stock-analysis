@@ -124,6 +124,13 @@ def main():
         sma = np.insert(sma, [0,0], values=0)
         avg_tweet_array = np.insert(avg_tweet_array, avg_tweet_array.shape[1], sma, axis=1)
 
+    # Turn avg tweet array into dataframe
+    # fist define columns
+    column_names = ["Date", "avg_neg", "avg_pos", "avg_neu", "avg_comp", "avg_retweets", "avg_favorites", "three_day_neg", "three_day_pos", "three_day_neu", "three_day_comp", "three_day_retweets", "three_day_favorites"]
+    df = pd.DataFrame(avg_tweet_array, columns=column_names)
+    # TODO: Add datatypes to each of these columns because right now it only stores it as an object. Figure out how to store merge on date
+    # this gets a key error because there is no date column in df_stocks (weird) and date in df is just an object
+    # merge = pd.merge(df_stocks, df, how="left")
     # print
 
 if __name__ == '__main__':
