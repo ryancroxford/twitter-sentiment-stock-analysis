@@ -2,6 +2,9 @@ from sklearn import datasets, preprocessing, metrics
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import confusion_matrix, plot_confusion_matrix
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 
 
@@ -40,7 +43,7 @@ def main():
     num_max_features = x_train.shape[1]
     print(run_decision_tree(x_train, x_test, y_train, y_test, num_max_features))
 
-    # Trial below
+    # messing around with various things below
 
     column_names = ["Open", "Close", "Adj Close", "Volume", "avg_neg", "avg_pos", "avg_neu", "avg_comp", "avg_retweets", "avg_favorites",
                     "three_day_neg", "three_day_pos", "three_day_neu", "three_day_comp", "three_day_retweets",
@@ -50,7 +53,25 @@ def main():
     estimators = 100
     clf = RandomForestClassifier(random_state=0, n_estimators=estimators)
     clf.fit(x_train, y_train)
+    # get the actual predictions
+    predictions = clf.predict(x_test)
+    # conf_mat = confusion_matrix(y_test, predictions)
+
     print(clf.score(x_test, y_test))
+    disp = plot_confusion_matrix(clf, x_test, y_test)
+    plt.show()
+
+    # Quick experiment to see if just selecting indicies of the testing data that had a high probability
+    # returns a high score
+    probs = clf.predict_proba(x_test)
+    # get a boolean array of the probability matrix where there is a value greater than 0.6
+    boolOfHighProb = np.any(probs > 0.6, axis=1)
+    x_high_prob, y_high_prob = x_test[boolOfHighProb], y_test[boolOfHighProb]
+    print(f"Score of prediction when controlling for high probability {clf.score(x_high_prob, y_high_prob)}")
+    disp = plot_confusion_matrix(clf, x_high_prob, y_high_prob)
+    plt.show()
+
+
 
 
 
