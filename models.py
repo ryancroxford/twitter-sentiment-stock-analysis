@@ -20,13 +20,28 @@ def split_data(df, target_label):
 def run_random_forest(x_train, x_test, y_train, y_test, estimators):
     clf = RandomForestClassifier(random_state=0, n_estimators=estimators)
     clf.fit(x_train, y_train)
+    calc_score_on_high_prob(clf, x_test, y_test)
     return clf.score(x_test, y_test)
 
 
 def run_decision_tree(x_train, x_test, y_train, y_test, num_max_features):
     clf = DecisionTreeClassifier(random_state=0, max_features=16)
     clf.fit(x_train, y_train)
+    calc_score_on_high_prob(clf, x_test, y_test)
     return clf.score(x_test, y_test)
+
+
+def calc_score_on_high_prob(clf, x_test, y_test):
+    # Quick experiment to see if just selecting indicies of the testing data that had a high probability
+    # returns a high score
+    probs = clf.predict_proba(x_test)
+    # get a boolean array of the probability matrix where there is a value greater than 0.6
+    boolOfHighProb = np.any(probs > 0.6, axis=1)
+    x_high_prob, y_high_prob = x_test[boolOfHighProb], y_test[boolOfHighProb]
+    print(f"Score of prediction when controlling for high probability {clf.score(x_high_prob, y_high_prob)}")
+    disp = plot_confusion_matrix(clf, x_high_prob, y_high_prob)
+    plt.show()
+
 
 
 def main():
@@ -48,7 +63,7 @@ def main():
     column_names = ["Open", "Close", "Adj Close", "Volume", "avg_neg", "avg_pos", "avg_neu", "avg_comp", "avg_retweets", "avg_favorites",
                     "three_day_neg", "three_day_pos", "three_day_neu", "three_day_comp", "three_day_retweets",
                     "three_day_favorites"]
-    x_train, x_test, y_train, y_test = train_test_split(merge[column_names], merge["daily_gain"], test_size=0.25, shuffle=False,
+    x_train, x_test, y_train, y_test = train_test_split(merge[column_names], merge["daily_gain"], test_size=0.2, shuffle=False,
                                                         random_state=0)
     estimators = 100
     clf = RandomForestClassifier(random_state=0, n_estimators=estimators)
@@ -61,15 +76,8 @@ def main():
     disp = plot_confusion_matrix(clf, x_test, y_test)
     plt.show()
 
-    # Quick experiment to see if just selecting indicies of the testing data that had a high probability
-    # returns a high score
-    probs = clf.predict_proba(x_test)
-    # get a boolean array of the probability matrix where there is a value greater than 0.6
-    boolOfHighProb = np.any(probs > 0.6, axis=1)
-    x_high_prob, y_high_prob = x_test[boolOfHighProb], y_test[boolOfHighProb]
-    print(f"Score of prediction when controlling for high probability {clf.score(x_high_prob, y_high_prob)}")
-    disp = plot_confusion_matrix(clf, x_high_prob, y_high_prob)
-    plt.show()
+    calc_score_on_high_prob(clf, x_test, y_test)
+
 
 
 
