@@ -1,3 +1,5 @@
+#TODO: Generalize Functions and clean up code. This file should only contain data cleaning
+
 # Import necessary libraries
 import numpy as np
 import matplotlib.pylab as plt # for plotting
@@ -119,7 +121,7 @@ def main():
 
     avg_tweet_array = get_avgd_array(df)
 
-    # TODO: For some reason 2021-01-07 has NaN for tweet values but 2021-01-07
+    # TODO: For some reason 2021-01-07 has NaN for tweet values but 2021-01-08 has values
 
     init_cols = avg_tweet_array.shape[1]
     for i in range(1, init_cols):
@@ -139,7 +141,10 @@ def main():
     df = df.astype(data_types)
     df.to_pickle("data/sentiment_moving_labelled.pkl")
     merge = pd.merge(df_stocks, df, how="left")
-    merge.to_pickle("data/merged.pkl")
+    # TODO: figure out why there are a bunch of random days with NaN in tweet values
+    merge = merge.drop(merge.index[0])
+
+    df.to_pickle("data/merged.pkl")
 
     # print
 
