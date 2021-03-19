@@ -1,13 +1,15 @@
 # Import necessary libraries
 import numpy as np
-import matplotlib.pylab as plt # for plotting
+import matplotlib.pylab as plt  # for plotting
 import pandas as pd
 import sklearn
 import yahoofinance as yf
 import nltk
 import sys
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
+
 nltk.download('vader_lexicon')
+
 
 ### these only get run when loading for the first time  ###
 def label_sentiment(df):
@@ -33,18 +35,19 @@ def label_sentiment(df):
     df.to_pickle("data/sentiment_labelled.pkl")
     return df
 
+
 def load_tweets(file_name):
     df = pd.read_csv(file_name)
     df.date = pd.to_datetime(df.date)
-    df = df[df.date >= np.datetime64('2016-08-01')]
+    df = df[np.datetime64('2016-08-01') <= df.date < np.datetime64('2021-01-07')]
     df = df.sort_values(by=["date"], ascending=True)
     return df
+
 
 def load_stocks():
     historical = yf.HistoricalPrices('SPY', '2016-08-01', '2021-01-20')
     dfs = historical.to_dfs()
     df_stocks = dfs['Historical Prices']
-    df_stocks
     df_stocks = df_stocks.reset_index()
     df_stocks["Date"] = pd.to_datetime(df_stocks["Date"])
     daily_return = df_stocks["Open"].pct_change(1)
@@ -53,6 +56,7 @@ def load_stocks():
     df_stocks.to_pickle("data/df_stocks.pkl")
 
     return df_stocks
+
 
 def get_avgd_array(df):
     # convert to an np array and then organize tweets by day
@@ -123,15 +127,17 @@ def main():
 
     init_cols = avg_tweet_array.shape[1]
     for i in range(1, init_cols):
-        sma = moving_average(avg_tweet_array[:,i], 3)
+        sma = moving_average(avg_tweet_array[:, i], 3)
         sma.reshape(len(sma), 1)
-        sma = np.insert(sma, [0,0], values=0)
+        sma = np.insert(sma, [0, 0], values=0)
         avg_tweet_array = np.insert(avg_tweet_array, avg_tweet_array.shape[1], sma, axis=1)
 
     # Turn avg tweet array into dataframe
     # fist define columns
-    column_names = ["Date", "avg_neg", "avg_pos", "avg_neu", "avg_comp", "avg_retweets", "avg_favorites", "three_day_neg", "three_day_pos", "three_day_neu", "three_day_comp", "three_day_retweets", "three_day_favorites"]
-    data_types = {"Date":'datetime64[ns]', "avg_neg" : 'float64', "avg_pos": 'float64', "avg_neu": 'float64',
+    column_names = ["Date", "avg_neg", "avg_pos", "avg_neu", "avg_comp", "avg_retweets", "avg_favorites",
+                    "three_day_neg", "three_day_pos", "three_day_neu", "three_day_comp", "three_day_retweets",
+                    "three_day_favorites"]
+    data_types = {"Date": 'datetime64[ns]', "avg_neg": 'float64', "avg_pos": 'float64', "avg_neu": 'float64',
                   "avg_comp": 'float64', "avg_retweets": 'float64', "avg_favorites": 'float64',
                   "three_day_neg": 'float64', "three_day_pos": 'float64', "three_day_neu": 'float64',
                   "three_day_comp": 'float64', "three_day_retweets": 'float64', "three_day_favorites": 'float64'}
@@ -142,6 +148,7 @@ def main():
     merge.to_pickle("data/merged.pkl")
 
     # print
+
 
 if __name__ == '__main__':
     main()

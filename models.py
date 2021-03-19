@@ -20,15 +20,24 @@ def split_data(df, target_label):
 def run_random_forest_classifer(x_train, x_test, y_train, y_test, estimators):
     clf = RandomForestClassifier(random_state=0, n_estimators=estimators)
     clf.fit(x_train, y_train)
-    calc_score_on_high_prob(clf, x_test, y_test)
-    print(f"Random Forest Classifer score: {clf.score(x_test, y_test)}")
+    score = clf.score(x_test, y_test)
+    print(f"Random Forest Classifer score: {score}")
+  #  calc_score_on_high_prob(clf, x_test, y_test)
+    pred = clf.predict(x_test)
+    conf_matrix = confusion_matrix(pred, y_test)
+    print("Random Forest Metrics:")
+    calc_metrics(conf_matrix)
 
 
 def run_decision_tree(x_train, x_test, y_train, y_test, num_max_features):
     clf = DecisionTreeClassifier(random_state=0, max_features=16)
     clf.fit(x_train, y_train)
-    calc_score_on_high_prob(clf, x_test, y_test)
     print(f"decision tree Classifer score: {clf.score(x_test, y_test)}")
+    pred = clf.predict(x_test)
+    conf_matrix = confusion_matrix(pred, y_test)
+    print("Decision Tree Metrics:")
+    calc_metrics(conf_matrix)
+   # calc_score_on_high_prob(clf, x_test, y_test)
 
 
 def calc_score_on_high_prob(clf, x_test, y_test):
@@ -40,10 +49,21 @@ def calc_score_on_high_prob(clf, x_test, y_test):
     x_high_prob, y_high_prob = x_test[boolOfHighProb], y_test[boolOfHighProb]
     print(f"Score of prediction when controlling for high probability {clf.score(x_high_prob, y_high_prob)}")
     disp = plot_confusion_matrix(clf, x_high_prob, y_high_prob)
+    plt.title("Confusion Matrix for p>0.6")
     plt.show()
 
+def calc_metrics(conf_matrix):
+    tp = conf_matrix[1][1]
+    fp = conf_matrix[0][1]
+    tn = conf_matrix[1][0]
+    fn = conf_matrix[0][0]
+    accuracy = (tp+tn)/(tp+fp+tn+fn)
+    recall = tp/(tp+fn)
+    precision = tp/(tp+fp)
+    print(f"Accuracy: {accuracy}")
+    print(f"Recall: {recall}")
+    print(f"Precision: {precision}")
 
-# TODO: Create methods for outputting stats about each model run
 
 def main():
     merge = pd.read_pickle("data/merged.pkl")
@@ -73,11 +93,12 @@ def main():
     predictions = clf.predict(x_test)
     # conf_mat = confusion_matrix(y_test, predictions)
 
-    print(clf.score(x_test, y_test))
-    disp = plot_confusion_matrix(clf, x_test, y_test)
-    plt.show()
+    # print(clf.score(x_test, y_test))
+    # disp = plot_confusion_matrix(clf, x_test, y_test)
+    # plt.title()
+    # plt.show()
 
-    calc_score_on_high_prob(clf, x_test, y_test)
+    # calc_score_on_high_prob(clf, x_test, y_test)
 
     # For the regressor, split the data with daily_return as the target
     x_train, x_test, y_train, y_test = train_test_split(merge[column_names], merge["daily_return"], test_size=0.2, shuffle=False,
