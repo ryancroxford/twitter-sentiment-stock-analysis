@@ -23,8 +23,8 @@ def run_random_forest_classifer(x_train, x_test, y_train, y_test, estimators):
     score = clf.score(x_test, y_test)
     print(f"Random Forest Classifer score: {score}")
   #  calc_score_on_high_prob(clf, x_test, y_test)
-    pred = clf.predict(x_test)
-    conf_matrix = confusion_matrix(pred, y_test)
+    y_pred = clf.predict(x_test)
+    conf_matrix = confusion_matrix(y_test, y_pred)
     print("Random Forest Metrics:")
     calc_metrics(conf_matrix)
 
@@ -33,8 +33,8 @@ def run_decision_tree(x_train, x_test, y_train, y_test, num_max_features):
     clf = DecisionTreeClassifier(random_state=0, max_features=16)
     clf.fit(x_train, y_train)
     print(f"decision tree Classifer score: {clf.score(x_test, y_test)}")
-    pred = clf.predict(x_test)
-    conf_matrix = confusion_matrix(pred, y_test)
+    y_pred = clf.predict(x_test)
+    conf_matrix = confusion_matrix(y_test, y_pred)
     print("Decision Tree Metrics:")
     calc_metrics(conf_matrix)
    # calc_score_on_high_prob(clf, x_test, y_test)
@@ -75,6 +75,7 @@ def main():
     merge[label] = merge[label].astype("bool")
     x_train, x_test, y_train, y_test = split_data(merge.dropna(), label)
     estimators = 100
+    np.set_printoptions(precision=4)
     run_random_forest_classifer(x_train, x_test, y_train, y_test, estimators)
     num_max_features = x_train.shape[1]
     run_decision_tree(x_train, x_test, y_train, y_test, num_max_features)
