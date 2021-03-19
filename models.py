@@ -22,11 +22,14 @@ def run_random_forest_classifer(x_train, x_test, y_train, y_test, estimators):
     clf.fit(x_train, y_train)
     score = clf.score(x_test, y_test)
     print(f"Random Forest Classifer score: {score}")
-  #  calc_score_on_high_prob(clf, x_test, y_test)
+  # calc_score_on_high_prob(clf, x_test, y_test)
     y_pred = clf.predict(x_test)
     conf_matrix = confusion_matrix(y_test, y_pred)
     print("Random Forest Metrics:")
     calc_metrics(conf_matrix)
+    plot_confusion_matrix(clf, x_test, y_test)
+    plt.title("Confusion Matrix for Random Forest")
+    plt.show()
 
 
 def run_decision_tree(x_train, x_test, y_train, y_test, num_max_features):
@@ -37,6 +40,9 @@ def run_decision_tree(x_train, x_test, y_train, y_test, num_max_features):
     conf_matrix = confusion_matrix(y_test, y_pred)
     print("Decision Tree Metrics:")
     calc_metrics(conf_matrix)
+    plot_confusion_matrix(clf, x_test, y_test)
+    plt.title("Confusion Matrix for Decision Tree")
+    plt.show()
    # calc_score_on_high_prob(clf, x_test, y_test)
 
 
