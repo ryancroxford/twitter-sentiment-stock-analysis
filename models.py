@@ -81,7 +81,11 @@ def main():
     merge[label] = merge[label].astype("bool")
     x_train, x_test, y_train, y_test = split_data(merge.dropna(), label)
     estimators = 100
-    np.set_printoptions(precision=4)
+    print(merge.columns)
+    cols = merge[["Volume", "daily_gain", "three_day_comp"]]
+    print(cols)
+    print(cols.describe())
+    print(cols[["daily_gain"]].value_counts())
     run_random_forest_classifer(x_train, x_test, y_train, y_test, estimators)
     num_max_features = x_train.shape[1]
     run_decision_tree(x_train, x_test, y_train, y_test, num_max_features)

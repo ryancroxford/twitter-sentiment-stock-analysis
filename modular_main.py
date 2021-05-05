@@ -121,6 +121,7 @@ def main():
         df = pd.read_pickle("data/sentiment_labelled.pkl")
         df_stocks = pd.read_pickle("data/df_stocks.pkl")
 
+    (print(df.shape))
     avg_tweet_array = get_avgd_array(df)
 
     # TODO: For some reason 2021-01-07 has NaN for tweet values but 2021-01-07
