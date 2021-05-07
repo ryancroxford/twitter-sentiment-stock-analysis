@@ -1,4 +1,4 @@
-#TODO: Generalize Functions and clean up code. This file should only contain data cleaning
+# TODO: Generalize Functions and clean up code. This file should only contain data cleaning
 
 # Import necessary libraries
 import numpy as np
@@ -11,8 +11,10 @@ import sys
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 nltk.download('vader_lexicon')
 
-### these only get run when loading for the first time  ###
-def label_sentiment(df):
+
+### these only get run when loading for the first time ###
+def label_sentiment(df, outfile):
+
     neg_sent = []
     neu_sent = []
     pos_sent = []
@@ -32,8 +34,9 @@ def label_sentiment(df):
     df['Pos_Sent'] = pos_sent
     df['Comp_Sent'] = comp_sent
 
-    df.to_pickle("data/sentiment_labelled.pkl")
+    df.to_pickle(outfile)
     return df
+
 
 def load_tweets(file_name):
     df = pd.read_csv(file_name)
@@ -42,11 +45,11 @@ def load_tweets(file_name):
     df = df.sort_values(by=["date"], ascending=True)
     return df
 
+
 def load_stocks():
-    historical = yf.HistoricalPrices('SPY', '2016-08-01', '2021-01-20')
+    historical = yf.HistoricalPrices('SPY', '2016-08-01', '2021-05-05')
     dfs = historical.to_dfs()
     df_stocks = dfs['Historical Prices']
-    df_stocks
     df_stocks = df_stocks.reset_index()
     df_stocks["Date"] = pd.to_datetime(df_stocks["Date"])
     daily_return = df_stocks["Open"].pct_change(1)
@@ -55,6 +58,7 @@ def load_stocks():
     df_stocks.to_pickle("data/df_stocks.pkl")
 
     return df_stocks
+
 
 def get_avgd_array(df):
     # convert to an np array and then organize tweets by day
@@ -106,29 +110,43 @@ def moving_average(x, w):
     return np.convolve(x, np.ones(w), 'valid') / w
 
 
+def add_moving_average(tweet_array):
+    init_cols = tweet_array.shape[1]
+    for i in range(1, init_cols):
+        sma = moving_average(tweet_array[:, i], 3)
+        sma.reshape(len(sma), 1)
+        sma = np.insert(sma, [0, 0], values=0)
+        tweet_array = np.insert(tweet_array, tweet_array.shape[1], sma, axis=1)
+        return tweet_array
+
+
 def main():
-    reprocess_data = False
+
+    reprocess_data = True
 
     if reprocess_data:
-        file_name = "data/trump-twitter.csv"
-        df = load_tweets(file_name)
-        df = label_sentiment(df)
+        trump_data = "data/trump-twitter.csv"
+        trump_df = load_tweets(trump_data)
+        trump_df = label_sentiment(trump_df, "data/trump_sentiment_labelled.pkl")
+
+        politician_data = "data/politician_tweets.csv"
+        politician_df = load_tweets(politician_data)
+        politician_df = label_sentiment(politician_df, "data/politician_sentiment_labelled.pkl")
+
         df_stocks = load_stocks()
 
     else:
-        df = pd.read_pickle("data/sentiment_labelled.pkl")
+        trump_df = pd.read_pickle("data/trump_sentiment_labelled.pkl")
+        politician_df = pd.read_pickle("data/politician_sentiment_labelled.pkl")
         df_stocks = pd.read_pickle("data/df_stocks.pkl")
 
-    avg_tweet_array = get_avgd_array(df)
+    avg_trump_array = get_avgd_array(trump_df)
+    avg_politician_array = get_avgd_array(politician_df)
 
     # TODO: For some reason 2021-01-07 has NaN for tweet values but 2021-01-08 has values
 
-    init_cols = avg_tweet_array.shape[1]
-    for i in range(1, init_cols):
-        sma = moving_average(avg_tweet_array[:,i], 3)
-        sma.reshape(len(sma), 1)
-        sma = np.insert(sma, [0,0], values=0)
-        avg_tweet_array = np.insert(avg_tweet_array, avg_tweet_array.shape[1], sma, axis=1)
+    avg_trump_array = add_moving_average(avg_trump_array)
+    avg_politician_array = add_moving_average(avg_politician_array)
 
     # Turn avg tweet array into dataframe
     # fist define columns
@@ -137,16 +155,22 @@ def main():
                   "avg_comp": 'float64', "avg_retweets": 'float64', "avg_favorites": 'float64',
                   "three_day_neg": 'float64', "three_day_pos": 'float64', "three_day_neu": 'float64',
                   "three_day_comp": 'float64', "three_day_retweets": 'float64', "three_day_favorites": 'float64'}
-    df = pd.DataFrame(avg_tweet_array, columns=column_names)
-    df = df.astype(data_types)
-    df.to_pickle("data/sentiment_moving_labelled.pkl")
-    merge = pd.merge(df_stocks, df, how="left")
+
+    trump_df = pd.DataFrame(avg_trump_array, columns=column_names)
+    trump_df = trump_df.astype(data_types)
+    trump_df.to_pickle("data/trump_sentiment_moving_labelled.pkl")
+    trump_merge = pd.merge(df_stocks, trump_df, how="left")
     # TODO: figure out why there are a bunch of random days with NaN in tweet values
-    merge = merge.drop(merge.index[0])
+    trump_merge = trump_merge.drop(trump_merge.index[0])
+    trump_merge.to_pickle("data/trump_merged.pkl")
 
-    df.to_pickle("data/merged.pkl")
+    politician_df = pd.DataFrame(avg_politician_array, columns=column_names)
+    politician_df = trump_df.astype(data_types)
+    politician_df.to_pickle("data/trump_sentiment_moving_labelled.pkl")
+    politician_merge = pd.merge(df_stocks, politician_df, how="left")
+    politician_merge = politician_merge.drop(politician_merge.index[0])
+    politician_merge.to_pickle("data/politician_merged.pkl")
 
-    # print
 
 if __name__ == '__main__':
     main()

@@ -1,13 +1,13 @@
 import tweepy as tw
 import csv
+import pandas as pd
+import numpy as np
 
 CONSUMER_KEY = "0wB34Ld7N6PJPLsqIkWJVFU4w"
 CONSUMER_SECRET = "cjsuvi8mn9II4wgH5pXGXML2AoOnMTKgA1srcd3PAKlXiCNrPB"
 
 
 def get_user_tweets(api, user):
-
-
 
     # a list to hold all of a users tweets
     user_tweets = []
@@ -37,25 +37,36 @@ def get_user_tweets(api, user):
     pass
 
 
+def load_tweets(file_name):
+    df = pd.read_csv(file_name)
+    df.date = pd.to_datetime(df.date)
+    df = df[df.date >= np.datetime64('2016-08-01')]
+    df = df.sort_values(by=["date"], ascending=True)
+    return df
+
+
 def main():
 
-    auth = tw.AppAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
-    api = tw.API(auth, wait_on_rate_limit=True)
+    get_tweets = False
 
-    #with open(f'data/politician_tweets.csv', 'a') as f:
-    #    writer = csv.writer(f)
-    #    writer.writerow(["user", "date", "text", "retweets", "favorites"])
+    if get_tweets:
+        auth = tw.AppAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
+        api = tw.API(auth, wait_on_rate_limit=True)
 
-    with open(f'data/politician_handles.csv') as f:
-        reader = csv.reader(f)
-        start = False
-        for row in reader:
-            if row[2] == "Budd, Ted":
-                start = True
-            if row[4] != "" and start:
-                print("Getting tweets for ", row[2], " ", row[0])
-                get_user_tweets(api, row[4])
-                print("Finished getting tweets for ", row[2], " ", row[0])
+        with open(f'data/politician_tweets.csv', 'a') as f:
+            writer = csv.writer(f)
+            writer.writerow(["user", "date", "text", "retweets", "favorites"])
+
+        with open(f'data/politician_handles.csv') as f:
+            reader = csv.reader(f)
+            start = False
+            for row in reader:
+                if row[2] == "Shelby, Richard":     # if api cuts off requests, change this name to the new start point
+                    start = True
+                if row[4] != "" and start:
+                    print("Getting tweets for ", row[2], " ", row[0])
+                    get_user_tweets(api, row[4])
+                    print("Finished getting tweets for ", row[2], " ", row[0])
 
 
 main()
