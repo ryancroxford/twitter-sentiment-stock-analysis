@@ -67,7 +67,7 @@ def get_avgd_array(df):
     avg_tweet_array = []
 
     for row in tweet_array:
-        curr_date = row[7].date()
+        curr_date = row[1].date()
         if curr_date in tweet_dict:
             tweet_dict[curr_date].append(row)
         else:
@@ -86,8 +86,8 @@ def get_avgd_array(df):
             avg_pos += tweet[-3]
             avg_neu += tweet[-2]
             avg_comp += tweet[-1]
-            avg_favorites += tweet[5]
-            avg_retweets += tweet[6]
+            avg_favorites += tweet[4]
+            avg_retweets += tweet[3]
 
         tweets_per_day = len(tweet_dict[day])
         avg_neg /= tweets_per_day
@@ -122,7 +122,7 @@ def add_moving_average(tweet_array):
 
 def main():
 
-    reprocess_data = True
+    reprocess_data = False
 
     if reprocess_data:
         trump_data = "data/trump-twitter.csv"
@@ -137,6 +137,7 @@ def main():
 
     else:
         trump_df = pd.read_pickle("data/trump_sentiment_labelled.pkl")
+        trump_df = trump_df[['id', 'date', 'text', 'retweets', 'favorites', 'Neg_Sent', 'Neu_Sent', 'Pos_Sent', 'Comp_Sent']]
         politician_df = pd.read_pickle("data/politician_sentiment_labelled.pkl")
         df_stocks = pd.read_pickle("data/df_stocks.pkl")
 
