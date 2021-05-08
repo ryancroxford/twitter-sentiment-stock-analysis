@@ -117,7 +117,7 @@ def add_moving_average(tweet_array):
         sma.reshape(len(sma), 1)
         sma = np.insert(sma, [0, 0], values=0)
         tweet_array = np.insert(tweet_array, tweet_array.shape[1], sma, axis=1)
-        return tweet_array
+    return tweet_array
 
 
 def main():
