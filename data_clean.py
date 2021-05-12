@@ -204,8 +204,8 @@ def main():
     trump_merge.to_pickle("data/trump_merged.pkl")
 
     politician_df = pd.DataFrame(avg_politician_array, columns=column_names)
-    politician_df = trump_df.astype(data_types)
-    politician_df.to_pickle("data/trump_sentiment_moving_labelled.pkl")
+    politician_df = politician_df.astype(data_types)
+    politician_df.to_pickle("data/politician_sentiment_moving_labelled.pkl")
     politician_merge = pd.merge(df_stocks, politician_df, how="left")
     politician_merge = politician_merge.drop(politician_merge.index[0])
     politician_merge.to_pickle("data/politician_merged.pkl")
