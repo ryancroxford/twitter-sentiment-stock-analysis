@@ -170,7 +170,6 @@ def main():
                   "three_day_comp": 'float64', "three_day_retweets": 'float64', "three_day_favorites": 'float64'}
 
     users = organize_by_user(politician_df)
-    users = {}
     cols = list(politician_df.columns.values)
     users['@realDonaldTrump'] = trump_df
 
