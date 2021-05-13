@@ -80,7 +80,7 @@ def calc_metrics(conf_matrix):
     print(f"Precision: {precision}")
 
 
-def calc_performance(x_test, y_pred, model_type, starting_balance):
+def perform_backtest(x_test, y_pred, model_type, starting_balance, pol):
     buyer = [starting_balance]
     agent = [starting_balance]
     random_walker = [starting_balance]
@@ -92,7 +92,7 @@ def calc_performance(x_test, y_pred, model_type, starting_balance):
         delta = row["Close"] - row["Open"]
 
         buyer_delta = delta
-        agent_delta = delta if row["Pred"] else 0
+        agent_delta = delta if not row["Pred"] else (-1 * delta)
         random_walker_delta = delta if round(random.random()) else 0
 
         buyer.append(buyer[-1] + buyer_delta)
@@ -107,8 +107,11 @@ def calc_performance(x_test, y_pred, model_type, starting_balance):
     random_walker = random_walker[1:]
 
 
-    fig, (ax1, ax2) = plt.subplots(2, 1, sharey=False)
-    ax1.set_title(model_type + ' Performance')
+    fig, (ax1, ax2) = plt.subplots(2, 1, sharex=False, sharey=False)
+    fig.text(0.5, 0.02, 'Date', ha='center')
+    fig.text(0.04, 0.5, 'Price ($)', va='center', rotation='vertical')
+
+    ax1.set_title(model_type + ' Backtest (' + pol + ')')
     ax1.plot(dates, agent, '-b', label='Agent')
     ax1.plot(dates, buyer, '-g', label='Constant Buyer')
     ax1.plot(dates, random_walker, '-r', label='Random Walker')
@@ -121,6 +124,8 @@ def calc_performance(x_test, y_pred, model_type, starting_balance):
 
 
 def main():
+    pol = "@realDonaldTrump"
+
     merge = pd.read_pickle("data/trump_merged.pkl")
     # I think we might need to shift this value down one? not sure though
     merge[["daily_return", "daily_gain"]] = merge[[
@@ -138,15 +143,15 @@ def main():
     rf_y_pred = run_random_forest_classifer(
         x_train, x_test, y_train, y_test, estimators)
 
-    calc_performance(dated_x_test, rf_y_pred,
-                     model_type="Random Forest", starting_balance=500)
+    perform_backtest(dated_x_test, rf_y_pred,
+                     model_type="Random Forest", starting_balance=500, pol=pol)
 
     num_max_features = x_train.shape[1]
     dt_y_pred = run_decision_tree(
         x_train, x_test, y_train, y_test, num_max_features)
 
-    calc_performance(dated_x_test, dt_y_pred,
-                     model_type="Decision Tree", starting_balance=500)
+    perform_backtest(dated_x_test, dt_y_pred,
+                     model_type="Decision Tree", starting_balance=500, pol=pol)
 
 
 main()
