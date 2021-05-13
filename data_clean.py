@@ -137,6 +137,32 @@ def organize_by_user(politician_df):
 
     return users
 
+# Currently turns users back into dataframes
+def horizontally_collapse(users, stock_df):
+    column_names = ["Date", "avg_neg", "avg_pos", "avg_neu", "avg_comp", "avg_retweets", "avg_favorites",
+                    "three_day_neg", "three_day_pos", "three_day_neu", "three_day_comp", "three_day_retweets",
+                    "three_day_favorites"]
+    data_types = {"Date": 'datetime64[ns]', "avg_neg": 'float64', "avg_pos": 'float64', "avg_neu": 'float64',
+                  "avg_comp": 'float64', "avg_retweets": 'float64', "avg_favorites": 'float64',
+                  "three_day_neg": 'float64', "three_day_pos": 'float64', "three_day_neu": 'float64',
+                  "three_day_comp": 'float64', "three_day_retweets": 'float64', "three_day_favorites": 'float64'}
+
+    for key in users.keys():
+        user_column_names = []
+        for col in column_names:
+            user_column_names.append(f"{key}_{col}")
+        user_data_types = {}
+        for data_type in data_types.keys():
+            user_data_types[f"{key}_{col}"] = data_types[data_type]
+        try:
+            users[key] = pd.DataFrame(users[key], columns=user_column_names)
+            users[key] = users[key].astype(user_data_types)
+        except ValueError:
+            # this failed because there weren't enough tweets
+            pass
+
+        return users
+
 
 
 def main():

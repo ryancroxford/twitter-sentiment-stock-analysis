@@ -120,7 +120,7 @@ def hyperparameter_tuning(x_train, x_test, y_train, y_test):
 
 
 def main():
-    merge_trump = pd.read_pickle("data/politician_merged.pkl")
+    merge_trump = pd.read_pickle("data/trump_merged.pkl")
     merge_politicians = pd.read_pickle("data/politician_merged.pkl")
     # I think we might need to shift this value down one? not sure though
     merge_trump[["daily_return", "daily_gain"]] = merge_trump[["daily_return", "daily_gain"]].shift(periods=1)
