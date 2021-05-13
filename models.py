@@ -6,6 +6,7 @@ from sklearn.metrics import confusion_matrix, plot_confusion_matrix
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import random
 
 
 # label is the string of the column we want our model to predict
@@ -13,8 +14,12 @@ def split_data(df, target_label):
     column_names = ["Date", "avg_neg", "avg_pos", "avg_neu", "avg_comp", "avg_retweets", "avg_favorites",
                     "three_day_neg", "three_day_pos", "three_day_neu", "three_day_comp", "three_day_retweets",
                     "three_day_favorites"]
-    return train_test_split(df.drop(["Date", "daily_return", target_label], axis=1), df[target_label], test_size=0.25, shuffle=False,
-                            random_state=0)
+
+    x_train, dated_x_test, y_train, y_test = train_test_split(df.drop([target_label], axis=1), df[target_label], test_size=0.25, shuffle=False,
+                                                              random_state=0)
+
+    return *train_test_split(df.drop(["Date", "daily_return", target_label], axis=1), df[target_label], test_size=0.25, shuffle=False,
+                             random_state=0), dated_x_test
 
 
 def run_random_forest_classifer(x_train, x_test, y_train, y_test, estimators):
@@ -30,6 +35,7 @@ def run_random_forest_classifer(x_train, x_test, y_train, y_test, estimators):
     plot_confusion_matrix(clf, x_test, y_test)
     plt.title("Confusion Matrix for Random Forest")
     plt.show()
+    return y_pred
 
 
 def run_decision_tree(x_train, x_test, y_train, y_test, num_max_features):
@@ -43,7 +49,8 @@ def run_decision_tree(x_train, x_test, y_train, y_test, num_max_features):
     plot_confusion_matrix(clf, x_test, y_test)
     plt.title("Confusion Matrix for Decision Tree")
     plt.show()
-   # calc_score_on_high_prob(clf, x_test, y_test)
+    # calc_score_on_high_prob(clf, x_test, y_test)
+    return y_pred
 
 
 def calc_score_on_high_prob(clf, x_test, y_test):
@@ -53,10 +60,12 @@ def calc_score_on_high_prob(clf, x_test, y_test):
     # get a boolean array of the probability matrix where there is a value greater than 0.6
     boolOfHighProb = np.any(probs > 0.6, axis=1)
     x_high_prob, y_high_prob = x_test[boolOfHighProb], y_test[boolOfHighProb]
-    print(f"Score of prediction when controlling for high probability {clf.score(x_high_prob, y_high_prob)}")
+    print(
+        f"Score of prediction when controlling for high probability {clf.score(x_high_prob, y_high_prob)}")
     disp = plot_confusion_matrix(clf, x_high_prob, y_high_prob)
     plt.title("Confusion Matrix for p>0.6")
     plt.show()
+
 
 def calc_metrics(conf_matrix):
     tp = conf_matrix[1][1]
@@ -71,50 +80,73 @@ def calc_metrics(conf_matrix):
     print(f"Precision: {precision}")
 
 
+def calc_performance(x_test, y_pred, model_type, starting_balance):
+    buyer = [starting_balance]
+    agent = [starting_balance]
+    random_walker = [starting_balance]
+    dates = []
+    stock = []
+    x_test["Pred"] = y_pred.tolist()
+
+    for index, row in x_test.iterrows():
+        delta = row["Close"] - row["Open"]
+
+        buyer_delta = delta
+        agent_delta = delta if row["Pred"] else 0
+        random_walker_delta = delta if round(random.random()) else 0
+
+        buyer.append(buyer[-1] + buyer_delta)
+        agent.append(agent[-1] + agent_delta)
+        random_walker.append(random_walker[-1] + random_walker_delta)
+
+        dates.append(row["Date"])
+        stock.append((row["Open"] + row["Close"])/2)
+
+    buyer = buyer[1:]
+    agent = agent[1:]
+    random_walker = random_walker[1:]
+
+
+    fig, (ax1, ax2) = plt.subplots(2, 1, sharey=False)
+    ax1.set_title(model_type + ' Performance')
+    ax1.plot(dates, agent, '-b', label='Agent')
+    ax1.plot(dates, buyer, '-g', label='Constant Buyer')
+    ax1.plot(dates, random_walker, '-r', label='Random Walker')
+
+    ax2.plot(dates, stock, '-k', label='Stock')
+
+    leg1 = ax1.legend()
+    leg2 = ax2.legend()
+    plt.show()
+
+
 def main():
-    merge = pd.read_pickle("data/merged.pkl")
+    merge = pd.read_pickle("data/trump_merged.pkl")
     # I think we might need to shift this value down one? not sure though
-    merge[["daily_return", "daily_gain"]] = merge[["daily_return", "daily_gain"]].shift(periods=1)
+    merge[["daily_return", "daily_gain"]] = merge[[
+        "daily_return", "daily_gain"]].shift(periods=1)
     # drop all rows with NaN values until we figure that out
     merge = merge.dropna()
     label = "daily_gain"
     merge[label] = merge[label].astype("bool")
-    x_train, x_test, y_train, y_test = split_data(merge.dropna(), label)
+
+    x_train, x_test, y_train, y_test, dated_x_test = split_data(
+        merge.dropna(), label)
+
     estimators = 100
-    print(merge.columns)
     cols = merge[["Volume", "daily_gain", "three_day_comp"]]
-    print(cols)
-    print(cols.describe())
-    print(cols[["daily_gain"]].value_counts())
-    run_random_forest_classifer(x_train, x_test, y_train, y_test, estimators)
+    rf_y_pred = run_random_forest_classifer(
+        x_train, x_test, y_train, y_test, estimators)
+
+    calc_performance(dated_x_test, rf_y_pred,
+                     model_type="Random Forest", starting_balance=500)
+
     num_max_features = x_train.shape[1]
-    run_decision_tree(x_train, x_test, y_train, y_test, num_max_features)
+    dt_y_pred = run_decision_tree(
+        x_train, x_test, y_train, y_test, num_max_features)
 
-    # messing around with various things below
-
-    column_names = ["Open", "Close", "Adj Close", "Volume", "avg_neg", "avg_pos", "avg_neu", "avg_comp", "avg_retweets", "avg_favorites",
-                    "three_day_neg", "three_day_pos", "three_day_neu", "three_day_comp", "three_day_retweets",
-                    "three_day_favorites"]
-    x_train, x_test, y_train, y_test = train_test_split(merge[column_names], merge["daily_gain"], test_size=0.2, shuffle=False,
-                                                        random_state=0)
-    estimators = 100
-    clf = RandomForestClassifier(random_state=0, n_estimators=estimators)
-    clf.fit(x_train, y_train)
-    # get the actual predictions
-    predictions = clf.predict(x_test)
-    # conf_mat = confusion_matrix(y_test, predictions)
-
-    # print(clf.score(x_test, y_test))
-    # disp = plot_confusion_matrix(clf, x_test, y_test)
-    # plt.title()
-    # plt.show()
-
-    # calc_score_on_high_prob(clf, x_test, y_test)
-
-    # For the regressor, split the data with daily_return as the target
-    x_train, x_test, y_train, y_test = train_test_split(merge[column_names], merge["daily_return"], test_size=0.2, shuffle=False,
-                                                        random_state=0)
-
+    calc_performance(dated_x_test, dt_y_pred,
+                     model_type="Decision Tree", starting_balance=500)
 
 
 main()

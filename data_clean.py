@@ -2,7 +2,7 @@
 
 # Import necessary libraries
 import numpy as np
-import matplotlib.pylab as plt # for plotting
+import matplotlib.pylab as plt  # for plotting
 import pandas as pd
 import sklearn
 import yahoofinance as yf
@@ -97,7 +97,8 @@ def get_avgd_array(df):
         avg_retweets /= tweets_per_day
         avg_favorites /= tweets_per_day
 
-        elem = [day, avg_neg, avg_pos, avg_neu, avg_comp, avg_retweets, avg_favorites]
+        elem = [day, avg_neg, avg_pos, avg_neu,
+                avg_comp, avg_retweets, avg_favorites]
         avg_tweet_array.append(elem)
 
     return np.array(avg_tweet_array)
@@ -119,18 +120,24 @@ def add_moving_average(tweet_array):
         tweet_array = np.insert(tweet_array, tweet_array.shape[1], sma, axis=1)
     return tweet_array
 
+
 def organize_by_user(politician_df):
     users = {}
+    influential_handles = set([
+        '@SenTedCruz', '@SenWarren', '@RepAOC', '@KamalaHarris', '@SenatorLeahy',
+        '@SenSanders', '@GOPLeader', '@SenSchumer', '@SenatorDurbin', '@CoryBooker',
+        '@SenJohnThune', '@RepDanCrenshaw', '@Liz_Cheney', '@SenJohnBarrasso', '@IlhanMN'
+    ])
 
     for index, row in politician_df.iterrows():
         handle = row['user']
-        if handle not in users:
-            users[handle] = [row]
-        else:
-            users[handle].append(row)
+        if handle in influential_handles:
+            if handle not in users:
+                users[handle] = [row]
+            else:
+                users[handle].append(row)
 
     return users
-
 
 
 def main():
@@ -139,18 +146,22 @@ def main():
     if reprocess_data:
         trump_data = "data/trump-twitter.csv"
         trump_df = load_tweets(trump_data)
-        trump_df = label_sentiment(trump_df, "data/trump_sentiment_labelled.pkl")
+        trump_df = label_sentiment(
+            trump_df, "data/trump_sentiment_labelled.pkl")
 
         politician_data = "data/politician_tweets.csv"
         politician_df = load_tweets(politician_data)
-        politician_df = label_sentiment(politician_df, "data/politician_sentiment_labelled.pkl")
+        politician_df = label_sentiment(
+            politician_df, "data/politician_sentiment_labelled.pkl")
 
         df_stocks = load_stocks()
 
     else:
         trump_df = pd.read_pickle("data/trump_sentiment_labelled.pkl")
-        trump_df = trump_df[['id', 'date', 'text', 'retweets', 'favorites', 'Neg_Sent', 'Neu_Sent', 'Pos_Sent', 'Comp_Sent']]
-        politician_df = pd.read_pickle("data/politician_sentiment_labelled.pkl")
+        trump_df = trump_df[['id', 'date', 'text', 'retweets',
+                             'favorites', 'Neg_Sent', 'Neu_Sent', 'Pos_Sent', 'Comp_Sent']]
+        politician_df = pd.read_pickle(
+            "data/politician_sentiment_labelled.pkl")
         df_stocks = pd.read_pickle("data/df_stocks.pkl")
 
     # Turn avg tweet array into dataframe
@@ -186,11 +197,11 @@ def main():
     avg_trump_array = add_moving_average(avg_trump_array)
     avg_politician_array = add_moving_average(avg_politician_array)
 
-
     # Turn avg tweet array into dataframe
     # fist define columns
-    column_names = ["Date", "avg_neg", "avg_pos", "avg_neu", "avg_comp", "avg_retweets", "avg_favorites", "three_day_neg", "three_day_pos", "three_day_neu", "three_day_comp", "three_day_retweets", "three_day_favorites"]
-    data_types = {"Date":'datetime64[ns]', "avg_neg" : 'float64', "avg_pos": 'float64', "avg_neu": 'float64',
+    column_names = ["Date", "avg_neg", "avg_pos", "avg_neu", "avg_comp", "avg_retweets", "avg_favorites",
+                    "three_day_neg", "three_day_pos", "three_day_neu", "three_day_comp", "three_day_retweets", "three_day_favorites"]
+    data_types = {"Date": 'datetime64[ns]', "avg_neg": 'float64', "avg_pos": 'float64', "avg_neu": 'float64',
                   "avg_comp": 'float64', "avg_retweets": 'float64', "avg_favorites": 'float64',
                   "three_day_neg": 'float64', "three_day_pos": 'float64', "three_day_neu": 'float64',
                   "three_day_comp": 'float64', "three_day_retweets": 'float64', "three_day_favorites": 'float64'}
