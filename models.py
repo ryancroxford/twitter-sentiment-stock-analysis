@@ -1,11 +1,12 @@
 from sklearn import datasets, preprocessing, metrics
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor, AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import confusion_matrix, plot_confusion_matrix
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import cross_val_score
 
 
 # label is the string of the column we want our model to predict
@@ -31,6 +32,8 @@ def run_random_forest_classifer(x_train, x_test, y_train, y_test, estimators):
     plt.title("Confusion Matrix for Random Forest")
     plt.show()
     calc_score_on_high_prob(clf, x_test, y_test)
+    print
+    print("Cross val score: ", np.mean(cross_val_score(clf, x_train, y_train, cv=5)))
 
 
 def run_decision_tree(x_train, x_test, y_train, y_test, num_max_features):
@@ -43,6 +46,19 @@ def run_decision_tree(x_train, x_test, y_train, y_test, num_max_features):
     calc_metrics(conf_matrix)
     plot_confusion_matrix(clf, x_test, y_test)
     plt.title("Confusion Matrix for Decision Tree")
+    plt.show()
+
+
+def run_AdaBoost(x_train, x_test, y_train, y_test):
+    clf = AdaBoostClassifier(n_estimators=100, random_state=0)
+    clf.fit(x_train, y_train)
+    print(f"AdaBoost Classifer score: {clf.score(x_test, y_test)}")
+    y_pred = clf.predict(x_test)
+    conf_matrix = confusion_matrix(y_test, y_pred)
+    print("AdaBoost Metrics:")
+    calc_metrics(conf_matrix)
+    plot_confusion_matrix(clf, x_test, y_test)
+    plt.title("Confusion Matrix for AdaBoost")
     plt.show()
 
 
@@ -104,7 +120,7 @@ def hyperparameter_tuning(x_train, x_test, y_train, y_test):
 
 
 def main():
-    merge_trump = pd.read_pickle("data/trump_merged.pkl")
+    merge_trump = pd.read_pickle("data/politician_merged.pkl")
     merge_politicians = pd.read_pickle("data/politician_merged.pkl")
     # I think we might need to shift this value down one? not sure though
     merge_trump[["daily_return", "daily_gain"]] = merge_trump[["daily_return", "daily_gain"]].shift(periods=1)
@@ -117,10 +133,12 @@ def main():
     # print(merge.columns)
     cols = merge_trump[["Volume", "daily_gain", "three_day_comp"]]
     print(x_train)
-    hyperparameter_tuning(x_train, x_test, y_train, y_test)
+    # hyperparameter_tuning(x_train, x_test, y_train, y_test)
     # print(cols.describe())
     # print(cols[["daily_gain"]].value_counts())
-    # run_random_forest_classifer(x_train, x_test, y_train, y_test, estimators)
+    run_random_forest_classifer(x_train, x_test, y_train, y_test, estimators)
+
+    # run_AdaBoost(x_train, x_test, y_train, y_test)
     # num_max_features = x_train.shape[1]
     # run_decision_tree(x_train, x_test, y_train, y_test, num_max_features)
     #
