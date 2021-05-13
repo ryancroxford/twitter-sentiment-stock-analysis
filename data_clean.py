@@ -121,13 +121,19 @@ def add_moving_average(tweet_array):
 
 def organize_by_user(politician_df):
     users = {}
+    influential_handles = set([
+        '@SenTedCruz', '@SenWarren', '@RepAOC', '@KamalaHarris', '@SenatorLeahy',
+        '@SenSanders', '@GOPLeader', '@SenSchumer', '@SenatorDurbin', '@CoryBooker',
+        '@SenJohnThune', '@RepDanCrenshaw', '@Liz_Cheney', '@SenJohnBarrasso', '@IlhanMN'
+    ])
 
     for index, row in politician_df.iterrows():
         handle = row['user']
-        if handle not in users:
-            users[handle] = [row]
-        else:
-            users[handle].append(row)
+        if handle in influential_handles:
+            if handle not in users:
+                users[handle] = [row]
+            else:
+                users[handle].append(row)
 
     return users
 
