@@ -6,10 +6,10 @@ from sklearn.metrics import confusion_matrix, plot_confusion_matrix
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import tensorflow as tf
-from tensorflow import keras
-from keras.models import Sequential
-from keras.layers import LSTM, Dropout, Dense, Conv1D, Input, Concatenate, GlobalMaxPool1D
+# import tensorflow as tf
+# from tensorflow import keras
+# from keras.models import Sequential
+# from keras.layers import LSTM, Dropout, Dense, Conv1D, Input, Concatenate, GlobalMaxPool1D
 from sklearn.model_selection import cross_val_score
 
 
@@ -36,7 +36,6 @@ def run_random_forest_classifer(x_train, x_test, y_train, y_test, estimators):
     plt.title("Confusion Matrix for Random Forest")
     plt.show()
     calc_score_on_high_prob(clf, x_test, y_test)
-    print
     print("Cross val score: ", np.mean(cross_val_score(clf, x_train, y_train, cv=5)))
 
 
@@ -54,7 +53,7 @@ def run_decision_tree(x_train, x_test, y_train, y_test, num_max_features):
 
 
 def run_AdaBoost(x_train, x_test, y_train, y_test):
-    clf = AdaBoostClassifier(n_estimators=100, random_state=0)
+    clf = AdaBoostClassifier(learning_rate=0.02760760107287054, n_estimators=34, random_state=1)
     clf.fit(x_train, y_train)
     print(f"AdaBoost Classifer score: {clf.score(x_test, y_test)}")
     y_pred = clf.predict(x_test)
@@ -64,7 +63,7 @@ def run_AdaBoost(x_train, x_test, y_train, y_test):
     plot_confusion_matrix(clf, x_test, y_test)
     plt.title("Confusion Matrix for AdaBoost")
     plt.show()
-
+    # calc_score_on_high_prob(clf, x_test, y_test)
 
 
 def calc_score_on_high_prob(clf, x_test, y_test):
@@ -124,7 +123,6 @@ def hyperparameter_tuning(x_train, x_test, y_train, y_test):
 
 
 def main():
-    merge = pd.read_pickle("data/trump_merged.pkl")
     merge_trump = pd.read_pickle("data/trump_merged.pkl")
     merge_politicians = pd.read_pickle("data/politician_merged.pkl")
     # I think we might need to shift this value down one? not sure though
@@ -137,42 +135,36 @@ def main():
     estimators = 100
     # print(merge.columns)
     cols = merge_trump[["Volume", "daily_gain", "three_day_comp"]]
-    print(x_train)
+    # print(x_train)
     # hyperparameter_tuning(x_train, x_test, y_train, y_test)
     # print(cols.describe())
     # print(cols[["daily_gain"]].value_counts())
-    run_random_forest_classifer(x_train, x_test, y_train, y_test, estimators)
+    # run_random_forest_classifer(x_train, x_test, y_train, y_test, estimators)
+    # hyperOptModel(x_train, x_test, y_train, y_test)
+    run_AdaBoost(x_train, x_test, y_train, y_test)
+    # num_max_features = x_train.shape[1]
+    # run_decision_tree(x_train, x_test, y_train, y_test, num_max_features)
 
+    # merge_politicians = pd.read_pickle("data/politician_merged.pkl")
+    # # I think we might need to shift this value down one? not sure though
+    # merge_politicians[["daily_return", "daily_gain"]] = merge_politicians[["daily_return", "daily_gain"]].shift(periods=1)
+    # # drop all rows with NaN values until we figure that out
+    # merge_politicians = merge_politicians.dropna()
+    # label = "daily_gain"
+    # merge_politicians[label] = merge_politicians[label].astype("bool")
+    # x_train, x_test, y_train, y_test = split_data(merge_politicians.dropna(), label)
+    # estimators = 100
+    # # print(merge.columns)
+    # cols = merge_politicians[["Volume", "daily_gain", "three_day_comp"]]
+    # # print(x_train)
+    # # hyperparameter_tuning(x_train, x_test, y_train, y_test)
+    # # print(cols.describe())
+    # # print(cols[["daily_gain"]].value_counts())
+    # run_random_forest_classifer(x_train, x_test, y_train, y_test, estimators)
+    # # hyperOptModel(x_train, x_test, y_train, y_test)
     # run_AdaBoost(x_train, x_test, y_train, y_test)
     # num_max_features = x_train.shape[1]
     # run_decision_tree(x_train, x_test, y_train, y_test, num_max_features)
-    #
-    # # messing around with various things below
-    #
-    # column_names = ["Open", "Close", "Adj Close", "Volume", "avg_neg", "avg_pos", "avg_neu", "avg_comp", "avg_retweets", "avg_favorites",
-    #                 "three_day_neg", "three_day_pos", "three_day_neu", "three_day_comp", "three_day_retweets",
-    #                 "three_day_favorites"]
-    # x_train, x_test, y_train, y_test = train_test_split(merge[column_names], merge["daily_gain"], test_size=0.2, shuffle=False,
-    #                                                     random_state=0)
-    #
-    # estimators = 100
-    # clf = RandomForestClassifier(random_state=0, n_estimators=estimators)
-    # clf.fit(x_train, y_train)
-    # # get the actual predictions
-    # predictions = clf.predict(x_test)
-    # conf_mat = confusion_matrix(y_test, predictions)
-
-    # print(clf.score(x_test, y_test))
-    # disp = plot_confusion_matrix(clf, x_test, y_test)
-    # plt.title()
-    # plt.show()
-
-    # calc_score_on_high_prob(clf, x_test, y_test)
-
-    # For the regressor, split the data with daily_return as the target
-    # x_train, x_test, y_train, y_test = train_test_split(merge[column_names], merge["daily_return"], test_size=0.2, shuffle=False,
-    #                                                     random_state=0)
-
 
 
 main()
