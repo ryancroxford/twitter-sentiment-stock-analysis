@@ -27,4 +27,5 @@ pip3 install git+https://github.com/hyperopt/hyperopt-sklearn
 ## Run
 1.  `data_clean.py` handles the processing for the data. Based on whether or not processing has already occured, it will either scrape the data from the input csvs and yahoofinance and perform the joins and sentiment analysis, or it will load in the pickled data from the previous run. To load in pre-processed data, set `reprocess_data = False` in `main()`. It then separates out our chosen politicians for use and sets up the final dataframes.
 2.  `models.py` and `sentiment_svm.ipynb` contain our models. The models run in turn, some of them performing automated hyperparameter tuning. They then report their results and metrics for analysis.
+3. The `performance_metrics` branch houses the backtesting, so run the models.py in that branch for backtesting graphs.
 
