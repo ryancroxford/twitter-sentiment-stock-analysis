@@ -6,6 +6,10 @@ from sklearn.metrics import confusion_matrix, plot_confusion_matrix
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import tensorflow as tf
+from tensorflow import keras
+from keras.models import Sequential
+from keras.layers import LSTM, Dropout, Dense, Conv1D, Input, Concatenate, GlobalMaxPool1D
 
 
 # label is the string of the column we want our model to predict
@@ -46,6 +50,18 @@ def run_decision_tree(x_train, x_test, y_train, y_test, num_max_features):
    # calc_score_on_high_prob(clf, x_test, y_test)
 
 
+def run_cnn(x_train, x_test, y_train, y_test):
+
+
+    plt.plot(history.history['accuracy'], label='training')
+    plt.plot(history.history['val_accuracy'], label='validation')
+    plt.title("Accuracy for Model vs. Epoch")
+    plt.ylabel("Accuracy")
+    plt.xlabel("Epochs")
+    plt.legend()
+    plt.show()
+
+
 def calc_score_on_high_prob(clf, x_test, y_test):
     # Quick experiment to see if just selecting indicies of the testing data that had a high probability
     # returns a high score
@@ -72,7 +88,7 @@ def calc_metrics(conf_matrix):
 
 
 def main():
-    merge = pd.read_pickle("data/merged.pkl")
+    merge = pd.read_pickle("data/trump_merged.pkl")
     # I think we might need to shift this value down one? not sure though
     merge[["daily_return", "daily_gain"]] = merge[["daily_return", "daily_gain"]].shift(periods=1)
     # drop all rows with NaN values until we figure that out
@@ -90,6 +106,7 @@ def main():
     num_max_features = x_train.shape[1]
     run_decision_tree(x_train, x_test, y_train, y_test, num_max_features)
 
+    run_cnn(x_train, x_test, y_train, y_test)
     # messing around with various things below
 
     column_names = ["Open", "Close", "Adj Close", "Volume", "avg_neg", "avg_pos", "avg_neu", "avg_comp", "avg_retweets", "avg_favorites",
@@ -100,6 +117,7 @@ def main():
     estimators = 100
     clf = RandomForestClassifier(random_state=0, n_estimators=estimators)
     clf.fit(x_train, y_train)
+
     # get the actual predictions
     predictions = clf.predict(x_test)
     # conf_mat = confusion_matrix(y_test, predictions)

@@ -198,13 +198,13 @@ def main():
     trump_df = pd.DataFrame(avg_trump_array, columns=column_names)
     trump_df = trump_df.astype(data_types)
     trump_df.to_pickle("data/trump_sentiment_moving_labelled.pkl")
-    trump_merge = pd.merge(df_stocks, trump_df, how="left")
+    trump_merge = pd.merge(df_stocks, trump_df, how="left").dropna()
     # TODO: figure out why there are a bunch of random days with NaN in tweet values
     trump_merge = trump_merge.drop(trump_merge.index[0])
     trump_merge.to_pickle("data/trump_merged.pkl")
 
     politician_df = pd.DataFrame(avg_politician_array, columns=column_names)
-    politician_df = trump_df.astype(data_types)
+    politician_df = politician_df.astype(data_types)
     politician_df.to_pickle("data/trump_sentiment_moving_labelled.pkl")
     politician_merge = pd.merge(df_stocks, politician_df, how="left")
     politician_merge = politician_merge.drop(politician_merge.index[0])
