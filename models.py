@@ -104,17 +104,18 @@ def hyperparameter_tuning(x_train, x_test, y_train, y_test):
 
 
 def main():
-    merge = pd.read_pickle("data/trump_merged.pkl")
+    merge_trump = pd.read_pickle("data/trump_merged.pkl")
+    merge_politicians = pd.read_pickle("data/politician_merged.pkl")
     # I think we might need to shift this value down one? not sure though
-    merge[["daily_return", "daily_gain"]] = merge[["daily_return", "daily_gain"]].shift(periods=1)
+    merge_trump[["daily_return", "daily_gain"]] = merge_trump[["daily_return", "daily_gain"]].shift(periods=1)
     # drop all rows with NaN values until we figure that out
-    merge = merge.dropna()
+    merge_trump = merge_trump.dropna()
     label = "daily_gain"
-    merge[label] = merge[label].astype("bool")
-    x_train, x_test, y_train, y_test = split_data(merge.dropna(), label)
+    merge_trump[label] = merge_trump[label].astype("bool")
+    x_train, x_test, y_train, y_test = split_data(merge_trump.dropna(), label)
     estimators = 100
     # print(merge.columns)
-    cols = merge[["Volume", "daily_gain", "three_day_comp"]]
+    cols = merge_trump[["Volume", "daily_gain", "three_day_comp"]]
     print(x_train)
     hyperparameter_tuning(x_train, x_test, y_train, y_test)
     # print(cols.describe())
