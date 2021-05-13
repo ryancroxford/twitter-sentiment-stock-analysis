@@ -121,15 +121,47 @@ def add_moving_average(tweet_array):
 
 def organize_by_user(politician_df):
     users = {}
+    influential_handles = set([
+        '@SenTedCruz', '@SenWarren', '@RepAOC', '@KamalaHarris', '@SenatorLeahy',
+        '@SenSanders', '@GOPLeader', '@SenSchumer', '@SenatorDurbin', '@CoryBooker',
+        '@SenJohnThune', '@RepDanCrenshaw', '@Liz_Cheney', '@SenJohnBarrasso', '@IlhanMN'
+    ])
 
     for index, row in politician_df.iterrows():
         handle = row['user']
-        if handle not in users:
-            users[handle] = [row]
-        else:
-            users[handle].append(row)
+        if handle in influential_handles:
+            if handle not in users:
+                users[handle] = [row]
+            else:
+                users[handle].append(row)
 
     return users
+
+# Currently turns users back into dataframes
+def horizontally_collapse(users, stock_df):
+    column_names = ["Date", "avg_neg", "avg_pos", "avg_neu", "avg_comp", "avg_retweets", "avg_favorites",
+                    "three_day_neg", "three_day_pos", "three_day_neu", "three_day_comp", "three_day_retweets",
+                    "three_day_favorites"]
+    data_types = {"Date": 'datetime64[ns]', "avg_neg": 'float64', "avg_pos": 'float64', "avg_neu": 'float64',
+                  "avg_comp": 'float64', "avg_retweets": 'float64', "avg_favorites": 'float64',
+                  "three_day_neg": 'float64', "three_day_pos": 'float64', "three_day_neu": 'float64',
+                  "three_day_comp": 'float64', "three_day_retweets": 'float64', "three_day_favorites": 'float64'}
+
+    for key in users.keys():
+        user_column_names = []
+        for col in column_names:
+            user_column_names.append(f"{key}_{col}")
+        user_data_types = {}
+        for data_type in data_types.keys():
+            user_data_types[f"{key}_{col}"] = data_types[data_type]
+        try:
+            users[key] = pd.DataFrame(users[key], columns=user_column_names)
+            users[key] = users[key].astype(user_data_types)
+        except ValueError:
+            # this failed because there weren't enough tweets
+            pass
+
+        return users
 
 
 
@@ -164,7 +196,6 @@ def main():
                   "three_day_comp": 'float64', "three_day_retweets": 'float64', "three_day_favorites": 'float64'}
 
     users = organize_by_user(politician_df)
-    users = {}
     cols = list(politician_df.columns.values)
     users['@realDonaldTrump'] = trump_df
 
@@ -205,7 +236,7 @@ def main():
 
     politician_df = pd.DataFrame(avg_politician_array, columns=column_names)
     politician_df = politician_df.astype(data_types)
-    politician_df.to_pickle("data/trump_sentiment_moving_labelled.pkl")
+    politician_df.to_pickle("data/politician_sentiment_moving_labelled.pkl")
     politician_merge = pd.merge(df_stocks, politician_df, how="left")
     politician_merge = politician_merge.drop(politician_merge.index[0])
     politician_merge.to_pickle("data/politician_merged.pkl")
