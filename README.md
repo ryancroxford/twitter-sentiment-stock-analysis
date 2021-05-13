@@ -12,10 +12,10 @@
 
 ## Data
 
-[Trump Tweets](https://www.thetrumparchive.com/)
-[Congressional Handles](https://triagecancer.org/congressional-social-media)
-[Twitter API](https://developer.twitter.com/en/docs/twitter-api)
-[Stock Data](https://pypi.org/project/yfinance/)
+[Trump Tweets](https://www.thetrumparchive.com/)  
+[Congressional Handles](https://triagecancer.org/congressional-social-media)  
+[Twitter API](https://developer.twitter.com/en/docs/twitter-api)  
+[Stock Data](https://pypi.org/project/yfinance/)  
 
 **data/** contains the data at several stages of processing, to avoid unnecessary recomputation. It contains financial data for the S&P 500, as well as the daily twitter activities of several politicians from 2016-2021. It also contains processed and merged versions of those datasets, where the tweets are joined with the stock performance by date, and additional moving averages and metrics are added. The tweets are also given sentiment score labels with their own additional metrics.
 
