@@ -30,6 +30,7 @@ def run_random_forest_classifer(x_train, x_test, y_train, y_test, estimators):
     plot_confusion_matrix(clf, x_test, y_test)
     plt.title("Confusion Matrix for Random Forest")
     plt.show()
+    calc_score_on_high_prob(clf, x_test, y_test)
 
 
 def run_decision_tree(x_train, x_test, y_train, y_test, num_max_features):
@@ -43,7 +44,7 @@ def run_decision_tree(x_train, x_test, y_train, y_test, num_max_features):
     plot_confusion_matrix(clf, x_test, y_test)
     plt.title("Confusion Matrix for Decision Tree")
     plt.show()
-   # calc_score_on_high_prob(clf, x_test, y_test)
+
 
 
 def calc_score_on_high_prob(clf, x_test, y_test):
@@ -69,10 +70,41 @@ def calc_metrics(conf_matrix):
     print(f"Accuracy: {accuracy}")
     print(f"Recall: {recall}")
     print(f"Precision: {precision}")
+    print()
+
+
+def hyperparameter_tuning(x_train, x_test, y_train, y_test):
+    # max_feature_scores = dict()
+    # for i in range(x_train.shape[1]):
+    #     clf = DecisionTreeClassifier(random_state=0, max_features=i + 1)
+    #     clf.fit(x_train, y_train)
+    #     max_feature_scores[i + 1] = clf.score(x_test, y_test)
+    # keyMaxValue = max(max_feature_scores, key=max_feature_scores.get)
+    # print(f'The maximum accuracy of {max_feature_scores[keyMaxValue]:0.5f} is found with {keyMaxValue} max features')
+    # plt.plot(max_feature_scores.keys(), max_feature_scores.values())
+    # plt.xlabel("Number of Max Features")
+    # plt.ylabel("Model Score")
+    # plt.title("Plot of scores vs max_features")
+    # plt.show()
+
+    estimators = [i + 1 for i in range(150)]
+    # add code here
+    n_estimators_scores = dict()
+    for i in estimators:
+        clf = RandomForestClassifier(random_state=0, n_estimators=i)
+        clf.fit(x_train, y_train)
+        n_estimators_scores[i] = clf.score(x_test, y_test)
+    keyMaxValue = max(n_estimators_scores, key=n_estimators_scores.get)
+    print(f'The maximum accuracy of {n_estimators_scores[keyMaxValue]:0.5f} is found with {keyMaxValue} estimators')
+    plt.plot(n_estimators_scores.keys(), n_estimators_scores.values())
+    plt.xlabel("Number of Estimators")
+    plt.ylabel("Model Score")
+    plt.title("Plot of scores vs n_estimators")
+    plt.show()
 
 
 def main():
-    merge = pd.read_pickle("data/merged.pkl")
+    merge = pd.read_pickle("data/trump_merged.pkl")
     # I think we might need to shift this value down one? not sure though
     merge[["daily_return", "daily_gain"]] = merge[["daily_return", "daily_gain"]].shift(periods=1)
     # drop all rows with NaN values until we figure that out
@@ -81,27 +113,29 @@ def main():
     merge[label] = merge[label].astype("bool")
     x_train, x_test, y_train, y_test = split_data(merge.dropna(), label)
     estimators = 100
-    print(merge.columns)
+    # print(merge.columns)
     cols = merge[["Volume", "daily_gain", "three_day_comp"]]
-    print(cols)
-    print(cols.describe())
-    print(cols[["daily_gain"]].value_counts())
-    run_random_forest_classifer(x_train, x_test, y_train, y_test, estimators)
-    num_max_features = x_train.shape[1]
-    run_decision_tree(x_train, x_test, y_train, y_test, num_max_features)
-
-    # messing around with various things below
-
-    column_names = ["Open", "Close", "Adj Close", "Volume", "avg_neg", "avg_pos", "avg_neu", "avg_comp", "avg_retweets", "avg_favorites",
-                    "three_day_neg", "three_day_pos", "three_day_neu", "three_day_comp", "three_day_retweets",
-                    "three_day_favorites"]
-    x_train, x_test, y_train, y_test = train_test_split(merge[column_names], merge["daily_gain"], test_size=0.2, shuffle=False,
-                                                        random_state=0)
-    estimators = 100
-    clf = RandomForestClassifier(random_state=0, n_estimators=estimators)
-    clf.fit(x_train, y_train)
-    # get the actual predictions
-    predictions = clf.predict(x_test)
+    print(x_train)
+    hyperparameter_tuning(x_train, x_test, y_train, y_test)
+    # print(cols.describe())
+    # print(cols[["daily_gain"]].value_counts())
+    # run_random_forest_classifer(x_train, x_test, y_train, y_test, estimators)
+    # num_max_features = x_train.shape[1]
+    # run_decision_tree(x_train, x_test, y_train, y_test, num_max_features)
+    #
+    # # messing around with various things below
+    #
+    # column_names = ["Open", "Close", "Adj Close", "Volume", "avg_neg", "avg_pos", "avg_neu", "avg_comp", "avg_retweets", "avg_favorites",
+    #                 "three_day_neg", "three_day_pos", "three_day_neu", "three_day_comp", "three_day_retweets",
+    #                 "three_day_favorites"]
+    # x_train, x_test, y_train, y_test = train_test_split(merge[column_names], merge["daily_gain"], test_size=0.2, shuffle=False,
+    #                                                     random_state=0)
+    #
+    # estimators = 100
+    # clf = RandomForestClassifier(random_state=0, n_estimators=estimators)
+    # clf.fit(x_train, y_train)
+    # # get the actual predictions
+    # predictions = clf.predict(x_test)
     # conf_mat = confusion_matrix(y_test, predictions)
 
     # print(clf.score(x_test, y_test))
@@ -112,8 +146,8 @@ def main():
     # calc_score_on_high_prob(clf, x_test, y_test)
 
     # For the regressor, split the data with daily_return as the target
-    x_train, x_test, y_train, y_test = train_test_split(merge[column_names], merge["daily_return"], test_size=0.2, shuffle=False,
-                                                        random_state=0)
+    # x_train, x_test, y_train, y_test = train_test_split(merge[column_names], merge["daily_return"], test_size=0.2, shuffle=False,
+    #                                                     random_state=0)
 
 
 
