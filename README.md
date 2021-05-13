@@ -8,6 +8,7 @@
 4. sklearn
 5. yahoofinance
 6. nltk
+7. tensorflow
 
 ## Data
 
