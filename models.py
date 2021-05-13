@@ -1,5 +1,6 @@
 from sklearn import datasets, preprocessing, metrics
 from sklearn.model_selection import train_test_split
+import kerastuner as kt
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import confusion_matrix, plot_confusion_matrix
@@ -36,7 +37,6 @@ def run_random_forest_classifer(x_train, x_test, y_train, y_test, estimators):
     plt.title("Confusion Matrix for Random Forest")
     plt.show()
     return y_pred
-
 
 def run_decision_tree(x_train, x_test, y_train, y_test, num_max_features):
     clf = DecisionTreeClassifier(random_state=0, max_features=16)
